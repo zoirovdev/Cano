@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <curses.h>
-
+#include <stdlib.h>
 
 
 #define ctrl(x)     ((x) & 0x1f)
-#define BACKSPACE   263
+#define BACKSPACE   127
 #define ESCAPE      27
 
 
@@ -36,6 +36,8 @@ int main(void){
     keypad(stdscr, TRUE);
     noecho();
 
+    char *buf = malloc(sizeof(char) * 1024);
+    size_t buf_s = 0;
 
     int row, col;
     getmaxyx(stdscr, row, col);
@@ -50,7 +52,8 @@ int main(void){
     
     int x, y = 0;
     while(ch != ctrl('q')){
-    	mvprintw(row-1, 0, stringify_mode());
+	refresh();
+	mvprintw(row-1, 0, stringify_mode());
     	move(y, x);
 	ch = getch();
 	switch(mode){
@@ -64,12 +67,14 @@ int main(void){
 		if(ch == BACKSPACE){
 		    getyx(stdscr, y, x);
 	    	    move(y, x-1);
-	            delch();
+		    delch();
+		    buf[buf_s--] = ' ';
 		} else if(ch == ESCAPE){
 		    mode = NORMAL;
 		    keypad(stdscr, TRUE);
 		} else {
-	    	    addch(ch);
+	    	    buf[buf_s++] = ch;
+		    addch(ch);
 		}
 		break;
 	    }
